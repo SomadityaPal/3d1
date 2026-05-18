@@ -1,0 +1,6 @@
+{
+  "name": "Christmas Baubles",
+  "description": "Interactive 3D physics simulation with festive baubles using React Three Fiber and Rapier.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
