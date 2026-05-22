@@ -1,0 +1,93 @@
+1-import * as THREE from "three"
+2:import { Canvas, useFrame, useThree } from "@react-three/fiber"
+3-import { Outlines, Environment, useTexture } from "@react-three/drei"
+4-import { Physics, useSphere } from "@react-three/cannon"
+5-import { EffectComposer, N8AO, SMAA } from "@react-three/postprocessing"
+6-import { useState, useRef, useEffect } from "react"
+7-import { db, auth } from "./lib/firebase"
+8-import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+9-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
+10-import { 
+11-  ArrowRight, 
+12-  Menu, 
+--
+37-import { LoadingScreen } from "./components/LoadingScreen"
+38-
+39-const rfs = THREE.MathUtils.randFloatSpread
+40-const sphereGeometry = new THREE.SphereGeometry(1, 32, 32)
+41-const baubleMaterial = new THREE.MeshStandardMaterial({ color: "#a5a7a9", roughness: 0.1, envMapIntensity: 1.2 })
+42-
+43-// Shared global mouse and scroll tracking coordinates
+44-let globalMouse = { x: 0, y: 0 }
+45-let globalScrollY = 0
+46-
+47:// 3D Canvas Background Component
+48-function BallScene() {
+49-  return (
+50-    <div className="absolute inset-0 w-full h-full">
+51:      <Canvas 
+52-        shadows 
+53-        gl={{ antialias: false, alpha: true }} 
+54-        dpr={[1, 1.5]} 
+55-        camera={{ position: [0, 0, 18], fov: 35, near: 1, far: 40 }}
+56-      >
+57-        <ambientLight intensity={1.1} />
+58-        {/* Transparent background to let the text show through */}
+59-        <spotLight intensity={2.2} angle={0.25} penumbra={1} position={[30, 35, 30]} castShadow shadow-mapSize={[512, 512]} />
+60-        <Physics gravity={[0, 1.8, 0]} iterations={10}>
+61-          <Pointer />
+62-          <Clump />
+63-        </Physics>
+64-        <Environment preset="city" />
+65-        <EffectComposer disableNormalPass multisampling={0}>
+66-          <N8AO halfRes color="#000000" aoRadius={1.8} intensity={1.8} aoSamples={6} denoiseSamples={4} />
+67-          <SMAA />
+68-        </EffectComposer>
+69:      </Canvas>
+70-    </div>
+71-  )
+72-}
+73-
+74-function Clump({ mat = new THREE.Matrix4(), vec = new THREE.Vector3() }) {
+75-  const [ref, api] = useSphere(() => ({ args: [1], mass: 1, angularDamping: 0.1, linearDamping: 0.65, position: [rfs(18), rfs(18), rfs(10)] }))
+76-  
+77-  const lastScrollY = useRef(0)
+78-  const scrollVelocity = useRef(0)
+79-  const pVec = useRef(new THREE.Vector3())
+--
+388-    ? EXPERIENCE_ITEMS
+389-    : EXPERIENCE_ITEMS.filter(item => item.category === selectedCategory)
+390-
+391-  const categories = ["All", "Travel", "Acquisition", "Dining", "Aviation", "Experience", "Sport", "Security"]
+392-
+393-  return (
+394-    <div id="illusion-root" className="relative w-full min-h-screen select-none bg-[#050505]">
+395-      
+396-      {isLoading && <LoadingScreen />}
+397-
+398:      {/* Massive Background Text behind 3D Canvas */}
+399-      <div className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] sm:w-[95vw] z-0 flex flex-col items-center justify-center pointer-events-none select-none px-4">
+400-        <h1 className="w-full text-center flex flex-col opacity-[0.75]">
+401-          <span className="text-[14vw] font-serif font-black text-neutral-400 tracking-tighter leading-[0.8] mb-2 whitespace-nowrap">
+402-            <GalleryTextReveal text="IF YOU CAN" delay={4.2} duration={2.0} stagger={0.1} />
+403-          </span>
+404-          <span className="text-[16vw] font-serif italic text-gold-400/80 tracking-tight leading-[0.7] transform -translate-y-[2vw] whitespace-nowrap">
+405-            <GalleryTextReveal text="DREAM IT," delay={4.6} duration={2.0} stagger={0.1} />
+406-          </span>
+407-          <span className="text-[4.5vw] sm:text-[3vw] font-sans font-bold text-neutral-400 tracking-widest mt-6 uppercase whitespace-nowrap">
+408-            <GalleryTextReveal text="WE HAVE ALREADY ARRANGED IT" delay={5.0} duration={1.5} stagger={0.04} />
+409-          </span>
+410-        </h1>
+411-      </div>
+412-
+413:      {/* 3D Interactive Background Canvas */}
+414-      <div className="fixed inset-0 z-0 pointer-events-none">
+415-        <BallScene />
+416-      </div>
+417-
+418-      {/* Main scrolling wrapper - transparent so background balloons are perfectly visible */}
+419-      <div className="relative w-full z-10 flex flex-col">
+420-        
+421-        {/* Navigation Bar */}
+422-        <header className="sticky top-0 w-full z-50 transition-all duration-300">
+423-          {/* Gradual glass background element */}
